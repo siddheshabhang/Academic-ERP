@@ -10,13 +10,16 @@ public class Placement {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long placement_id;
+    @Column(name = "placement_id")
+    private Long id;
 
-    private Long organisation_id;
+    @Column(name = "organisation_id")
+    private Long organisationId;
 
     private String profile;
 
     private String description;
 
-    private Double minimum_grade;   // CGPA cutoff
+    @Column(name = "minimum_grade")
+    private Double minGrade;
 }

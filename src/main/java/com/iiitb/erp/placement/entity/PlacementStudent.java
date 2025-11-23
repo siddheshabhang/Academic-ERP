@@ -1,17 +1,22 @@
 package com.iiitb.erp.placement.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
-import java.sql.Date;
+import java.util.Date;
 
 @Entity
 @Table(name = "placement_student")
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class PlacementStudent {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "placement_student_id")
     private Long id;
 
     @Column(name = "placement_id")
@@ -20,13 +25,13 @@ public class PlacementStudent {
     @Column(name = "student_id")
     private Long studentId;
 
-    @Column(name = "cv_path")
-    private String cvPath;
+    @Column(name = "cv_application")
+    private String cvApplication;
 
-    private String acceptance;   // PENDING / SELECTED / REJECTED
+    @Column(name = "acceptance")
+    private String acceptance;
 
-    private String comments;
-
-    @Column(name = "application_date")
-    private Date applicationDate;
+    @Column(name = "date")
+    @Temporal(TemporalType.DATE)
+    private Date date;
 }
