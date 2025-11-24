@@ -11,6 +11,9 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.iiitb.erp.placement.exception.ResourceNotFoundException;
+import com.iiitb.erp.placement.exception.BadRequestException;
+
 @Service
 public class PlacementService {
 
@@ -20,19 +23,14 @@ public class PlacementService {
     @Autowired
     private PlacementStudentRepository placementStudentRepo;
 
-    // --- Existing Features (Updated to use Integer) ---
-
     public List<Placement> getAllOffers() {
         return placementRepository.findAll();
     }
 
-    // Changed Long -> Integer
     public Placement getOfferById(Integer id) {
         return placementRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Offer not found with ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Offer not found with ID: " + id));
     }
-
-    // --- New Features for Use Case 8.6 ---
 
     public List<Student> getFilteredApplicants(Integer offerId, Double minGrade, Integer specialisationId, Integer domainId) {
         List<PlacementStudent> applications = placementStudentRepo.findByPlacementId(offerId);
@@ -57,6 +55,6 @@ public class PlacementService {
             placementStudentRepo.save(application);
             return true;
         }
-        return false;
+        throw new BadRequestException("Student has not applied for this offer or application not found.");
     }
 }

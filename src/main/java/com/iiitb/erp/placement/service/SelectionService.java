@@ -8,6 +8,8 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.iiitb.erp.placement.exception.ResourceNotFoundException;
+
 @Service
 public class SelectionService {
 
@@ -22,7 +24,8 @@ public class SelectionService {
 
     // Use Case 8.6: View Eligible Students (Not just those who applied)
     public List<Student> getEligibleStudents(Integer offerId) {
-        Placement offer = placementRepo.findById(offerId).orElseThrow();
+        Placement offer = placementRepo.findById(offerId)
+                .orElseThrow(() -> new ResourceNotFoundException("Offer not found with ID: " + offerId));
         List<PlacementFilter> filters = placementFilterRepo.findByPlacementId(offerId);
         List<Student> allStudents = studentRepo.findAll();
 
@@ -62,7 +65,9 @@ public class SelectionService {
 
     public String selectStudent(Integer offerId, Integer studentId) {
         PlacementStudent application = placementStudentRepo.findByPlacementIdAndStudentId(offerId, studentId);
-        if (application == null) return "Error: Application not found.";
+        if (application == null) {
+            throw new ResourceNotFoundException("Application not found for Student ID " + studentId + " in Offer " + offerId);
+        }
         application.setAcceptance(true);
         application.setComments("Selected by Outreach");
         placementStudentRepo.save(application);

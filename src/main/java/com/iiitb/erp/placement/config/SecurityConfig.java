@@ -11,22 +11,21 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.disable()) // Disable CSRF for APIs
+                .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        // Allow all Swagger UI resources
-                        .requestMatchers(
-                                "/v3/api-docs/**",
-                                "/swagger-ui/**",
-                                "/swagger-ui.html"
-                        ).permitAll()
+                        // 1. Allow Swagger UI resources
+                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
 
-                        // Allow H2 Console (if you use it)
+                        // 2. Allow the /error endpoint (Critical for debugging)
+                        .requestMatchers("/error").permitAll()
+
+                        // 3. Allow H2 Console (if used)
                         .requestMatchers("/h2-console/**").permitAll()
 
-                        // All other requests require authentication
+                        // 4. All other requests require authentication
                         .anyRequest().authenticated()
                 )
-                .oauth2ResourceServer(oauth2 -> oauth2.jwt()); // Enable OAuth2
+                .oauth2ResourceServer(oauth2 -> oauth2.jwt());
 
         return http.build();
     }

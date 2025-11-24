@@ -43,30 +43,13 @@ public class PlacementController {
     }
 
     // 4. View/Filter Applicants
-    @Operation(summary = "Filter Applicants", description = "View students who applied, with optional filtering by Grade, Domain, etc.")
-    @GetMapping("/{offerId}/applicants")
-    public ResponseEntity<List<Student>> getFilteredApplicants(
-            @PathVariable Integer offerId,
-            @RequestParam(required = false) Double minGrade,
-            @RequestParam(required = false) Integer specialisationId,
-            @RequestParam(required = false) Integer domainId) {
-
-        List<Student> students = placementService.getFilteredApplicants(offerId, minGrade, specialisationId, domainId);
-        return ResponseEntity.ok(students);
-    }
-
-    // 5. Select Student
-    @Operation(summary = "Select Student", description = "Mark a student as accepted for a specific job offer.")
+    @Operation(summary = "Select Student", description = "Mark a student as accepted.")
     @PostMapping("/{offerId}/select/{studentId}")
     public ResponseEntity<String> selectStudentForOffer(
             @PathVariable Integer offerId,
             @PathVariable Integer studentId) {
+        placementService.selectStudent(offerId, studentId);
 
-        boolean success = placementService.selectStudent(offerId, studentId);
-        if (success) {
-            return ResponseEntity.ok("Student " + studentId + " selected successfully.");
-        } else {
-            return ResponseEntity.badRequest().body("Selection failed. Student might not have applied.");
-        }
+        return ResponseEntity.ok("Student " + studentId + " selected successfully.");
     }
 }
