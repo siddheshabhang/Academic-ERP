@@ -20,27 +20,30 @@ public class PlacementStudentService {
     @Autowired
     private StudentRepository studentRepository;
 
-    public List<AppliedStudentDTO> getAppliedStudents(Long offerId) {
-        // 1. Fetch all applications for this specific Offer ID
+    // Changed Long -> Integer
+    public List<AppliedStudentDTO> getAppliedStudents(Integer offerId) {
         List<PlacementStudent> applications = placementStudentRepository.findByPlacementId(offerId);
 
         List<AppliedStudentDTO> result = new ArrayList<>();
 
-        // 2. Loop through applications and fetch Student details for each
         for (PlacementStudent app : applications) {
-            Student student = studentRepository.findById(app.getStudentId()).orElse(null);
+            // Changed Long -> Integer for Student ID lookup
+            Student student = studentRepository.findById(app.getStudent().getId()).orElse(null);
 
             if (student != null) {
                 String fullName = student.getFirstName() + " " + (student.getLastName() != null ? student.getLastName() : "");
 
+                // Handle boolean to String conversion for DTO if necessary
+                String status = (app.getAcceptance() != null && app.getAcceptance()) ? "SELECTED" : "PENDING";
+
                 result.add(new AppliedStudentDTO(
-                        app.getId(),
-                        student.getId(),
+                        Long.valueOf(app.getId()), // Cast to Long if DTO expects Long
+                        Long.valueOf(student.getId()),
                         student.getRollNumber(),
                         fullName,
                         student.getEmail(),
                         app.getCvApplication(),
-                        app.getAcceptance(),
+                        status,
                         app.getDate()
                 ));
             }

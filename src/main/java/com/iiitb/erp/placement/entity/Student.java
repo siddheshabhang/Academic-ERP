@@ -1,21 +1,16 @@
 package com.iiitb.erp.placement.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "students")
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class Student {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "student_id")
-    private Long id;
+    private Integer id;
 
     @Column(name = "roll_number", unique = true, nullable = false)
     private String rollNumber;
@@ -26,13 +21,12 @@ public class Student {
     @Column(name = "last_name")
     private String lastName;
 
-    @Column(unique = true, nullable = false)
+    @Column(nullable = false, unique = true)
     private String email;
 
     @Column(name = "photograph_path")
     private String photographPath;
 
-    @Column(name = "cgpa")
     private Double cgpa;
 
     @Column(name = "total_credits")
@@ -41,12 +35,15 @@ public class Student {
     @Column(name = "graduation_year")
     private Integer graduationYear;
 
-    @Column(name = "domain")
-    private String domain;
+    @ManyToOne
+    @JoinColumn(name = "domain_id")
+    private Domain domain;
 
-    @Column(name = "specialisation")
-    private String specialisation;
+    @ManyToOne
+    @JoinColumn(name = "specialisation_id")
+    private Specialisation specialisation;
 
-    @Column(name = "placement_id")
-    private Long placementId;
+    @ManyToOne
+    @JoinColumn(name = "placement_id")
+    private Placement placedOffer;
 }

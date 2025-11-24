@@ -10,16 +10,27 @@ public class Employee {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long employee_id;
+    @Column(name = "employee_id")
+    private Integer employee_id; // Changed from Long to Integer
 
-    private String first_name;
+    @Column(name = "first_name")
+    private String firstName;
 
-    private String last_name;
+    @Column(name = "last_name")
+    private String lastName;
 
     @Column(unique = true, nullable = false)
     private String email;
 
+    private String title;
+
     private String password;
 
     private String role;   // OUTREACH
+
+    @Column(name = "photograph_path")
+    private String photographPath;
+
+    @Column(name = "department_id")
+    private Integer departmentId;
 }

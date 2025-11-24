@@ -1,25 +1,16 @@
 package com.iiitb.erp.placement.controller;
 
-import com.iiitb.erp.placement.service.EmployeeService;
-import lombok.Data;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
 
-    @Autowired
-    private EmployeeService employeeService;
+    // The manual /login endpoint is removed.
+    // Please use the "Authorize" button in Swagger UI with the mock token.
 
-    @PostMapping("/login")
-    public String login(@RequestBody LoginRequest request) {
-        return employeeService.login(request.getEmail(), request.getPassword());
+    @GetMapping("/status")
+    public String status() {
+        return "Auth Service is running. Use OAuth2 for login.";
     }
-}
-
-@Data
-class LoginRequest {
-    private String email;
-    private String password;
 }

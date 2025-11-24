@@ -1,41 +1,32 @@
 package com.iiitb.erp.placement.config;
 
-import com.iiitb.erp.placement.security.JwtAuthenticationFilter;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
-@EnableWebSecurity
 public class SecurityConfig {
 
-    @Autowired
-    private JwtAuthenticationFilter jwtAuthenticationFilter;
-
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-
-        http.csrf(csrf -> csrf.disable())
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+                .csrf(csrf -> csrf.disable()) // Disable CSRF for APIs
                 .authorizeHttpRequests(auth -> auth
+                        // Allow all Swagger UI resources
                         .requestMatchers(
-                                "/auth/login",
-                                "/auth/register",
-                                "/swagger-ui/**",
                                 "/v3/api-docs/**",
-                                "/swagger-ui.html",
-                                "/h2-console/**"
+                                "/swagger-ui/**",
+                                "/swagger-ui.html"
                         ).permitAll()
-                        // .anyRequest().authenticated()
-                        .anyRequest().permitAll()  // TEMPORARY: Allow all for testing
+
+                        // Allow H2 Console (if you use it)
+                        .requestMatchers("/h2-console/**").permitAll()
+
+                        // All other requests require authentication
+                        .anyRequest().authenticated()
                 )
-                .headers(headers -> headers.frameOptions(frame -> frame.disable()))
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                .oauth2ResourceServer(oauth2 -> oauth2.jwt()); // Enable OAuth2
 
         return http.build();
     }

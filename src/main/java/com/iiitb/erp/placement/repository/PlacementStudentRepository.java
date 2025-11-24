@@ -4,15 +4,10 @@ import com.iiitb.erp.placement.entity.PlacementStudent;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
-import java.util.Optional;
 
-public interface PlacementStudentRepository extends JpaRepository<PlacementStudent, Long> {
+public interface PlacementStudentRepository extends JpaRepository<PlacementStudent, Integer> {
 
-    List<PlacementStudent> findByPlacementId(Long placementId);
+    List<PlacementStudent> findByPlacementId(Integer placementId);
 
-    boolean existsByPlacementIdAndStudentId(Long placementId, Long studentId);
-
-    long countByPlacementId(Long placementId);
-
-    Optional<PlacementStudent> findByPlacementIdAndStudentId(Long placementId, Long studentId);
+    PlacementStudent findByPlacementIdAndStudentId(Integer placementId, Integer studentId);
 }

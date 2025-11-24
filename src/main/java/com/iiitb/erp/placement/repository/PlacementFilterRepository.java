@@ -5,7 +5,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 
-public interface PlacementFilterRepository extends JpaRepository<PlacementFilter, Long> {
-
-    List<PlacementFilter> findByPlacementId(Long placementId);
+public interface PlacementFilterRepository extends JpaRepository<PlacementFilter, Integer> {
+    List<PlacementFilter> findByPlacementId(Integer placementId);
 }

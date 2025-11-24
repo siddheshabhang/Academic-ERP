@@ -9,16 +9,15 @@ import lombok.Data;
 public class Placement {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "placement_id")
-    private Long id;
+    private Integer id;
 
-    @Column(name = "organisation_id")
-    private Long organisationId;
+    @ManyToOne
+    @JoinColumn(name = "organisation_id")
+    private Organisation organisation;
 
     private String profile;
-
     private String description;
+    private Integer intake;
 
     @Column(name = "minimum_grade")
     private Double minGrade;

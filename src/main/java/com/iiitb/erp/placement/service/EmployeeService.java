@@ -2,7 +2,6 @@ package com.iiitb.erp.placement.service;
 
 import com.iiitb.erp.placement.entity.Employee;
 import com.iiitb.erp.placement.repository.EmployeeRepository;
-import com.iiitb.erp.placement.security.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -12,17 +11,10 @@ public class EmployeeService {
     @Autowired
     private EmployeeRepository employeeRepository;
 
-    @Autowired
-    private JwtUtil jwtUtil;
+    // NOTE: Manual login/token generation is removed because we use OAuth2 now.
 
-    public String login(String email, String password) {
-        Employee employee = employeeRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Invalid email"));
-
-        if (!employee.getPassword().equals(password)) {
-            throw new RuntimeException("Invalid password");
-        }
-
-        return jwtUtil.generateToken(employee.getEmail(), employee.getRole());
+    public Employee getEmployeeByEmail(String email) {
+        return employeeRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Employee not found"));
     }
 }

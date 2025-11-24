@@ -1,64 +1,48 @@
 package com.iiitb.erp.placement.controller;
 
-import com.iiitb.erp.placement.entity.Placement;
 import com.iiitb.erp.placement.entity.Student;
-import com.iiitb.erp.placement.dto.AppliedStudentDTO;
-import com.iiitb.erp.placement.service.PlacementService;
-import com.iiitb.erp.placement.service.PlacementStudentService;
 import com.iiitb.erp.placement.service.SelectionService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/offers")
+@RequestMapping("/api/placement")
 public class PlacementController {
 
     @Autowired
-    private PlacementService placementService;
+    private SelectionService selectionService;
 
-    @Autowired
-    private PlacementStudentService placementStudentService;
-
-    @Autowired
-    private SelectionService selectionService; // Inject the new service
-
-    @GetMapping
-    public List<Placement> getAllOffers() {
-        return placementService.getAllOffers();
+    // 1. View ALL Eligible students (Applied OR Not) - based on filters
+    @GetMapping("/{offerId}/eligible")
+    public ResponseEntity<List<Student>> getEligibleStudents(@PathVariable Integer offerId) {
+        return ResponseEntity.ok(selectionService.getEligibleStudents(offerId));
     }
 
-    @GetMapping("/{id}")
-    public Placement getOfferById(@PathVariable Long id) {
-        return placementService.getOfferById(id);
-    }
-
-    // Existing: Get all applications without filter
-    @GetMapping("/{id}/applications")
-    public List<AppliedStudentDTO> getAppliedStudents(@PathVariable Long id) {
-        return placementStudentService.getAppliedStudents(id);
-    }
-
-    // 1. Get Eligible Students (Potential candidates who fit criteria)
-    @GetMapping("/{id}/eligible")
-    public List<Student> getEligibleStudents(@PathVariable Long id) {
-        return selectionService.getEligibleStudents(id);
-    }
-
-    // 2. Filter Applicants (Search/Filter within the applied pool)
-    @GetMapping("/{id}/applications/filter")
-    public List<AppliedStudentDTO> getFilteredApplications(
-            @PathVariable Long id,
+    // 2. View Applied Students with dynamic filtering (Grade, Domain, etc.)
+    @GetMapping("/{offerId}/applicants")
+    public ResponseEntity<List<Student>> getFilteredApplicants(
+            @PathVariable Integer offerId,
             @RequestParam(required = false) Double minGrade,
-            @RequestParam(required = false) String domain,
-            @RequestParam(required = false) String specialisation) {
-        return selectionService.getFilteredApplicants(id, minGrade, domain, specialisation);
+            @RequestParam(required = false) Integer specialisationId,
+            @RequestParam(required = false) Integer domainId) {
+
+        List<Student> students = selectionService.getFilteredApplicants(offerId, minGrade, specialisationId, domainId);
+        return ResponseEntity.ok(students);
     }
 
-    // 3. Select a Student (Update status to SELECTED)
-    @PostMapping("/{id}/select/{studentId}")
-    public String selectStudent(@PathVariable Long id, @PathVariable Long studentId) {
-        return selectionService.selectStudentForOffer(id, studentId);
+    // 3. Select a student
+    @PostMapping("/{offerId}/select/{studentId}")
+    public ResponseEntity<String> selectStudentForOffer(
+            @PathVariable Integer offerId,
+            @PathVariable Integer studentId) {
+
+        String result = selectionService.selectStudent(offerId, studentId);
+        if (result.startsWith("Error")) {
+            return ResponseEntity.badRequest().body(result);
+        }
+        return ResponseEntity.ok(result);
     }
 }

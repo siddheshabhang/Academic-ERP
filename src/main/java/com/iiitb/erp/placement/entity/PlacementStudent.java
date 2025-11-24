@@ -1,37 +1,35 @@
 package com.iiitb.erp.placement.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
-
 import java.util.Date;
 
 @Entity
 @Table(name = "placement_student")
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class PlacementStudent {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "placement_student_id")
-    private Long id;
+    private Integer id;
 
-    @Column(name = "placement_id")
-    private Long placementId;
+    @ManyToOne
+    @JoinColumn(name = "placement_id")
+    private Placement placement;
 
-    @Column(name = "student_id")
-    private Long studentId;
+    @ManyToOne
+    @JoinColumn(name = "student_id")
+    private Student student;
 
     @Column(name = "cv_application")
     private String cvApplication;
 
-    @Column(name = "acceptance")
-    private String acceptance;
+    private String about;
 
-    @Column(name = "date")
+    private Boolean acceptance; // True = Selected
+
+    private String comments;
+
     @Temporal(TemporalType.DATE)
     private Date date;
 }

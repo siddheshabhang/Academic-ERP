@@ -10,12 +10,17 @@ public class PlacementFilter {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer id;
 
-    @Column(name = "placement_id")
-    private Long placementId;
+    @ManyToOne
+    @JoinColumn(name = "placement_id")
+    private Placement placement;
 
-    private String specialisation;
+    @ManyToOne
+    @JoinColumn(name = "domain_id")
+    private Domain domain;
 
-    private String domain;
+    @ManyToOne
+    @JoinColumn(name = "specialisation_id")
+    private Specialisation specialisation;
 }
