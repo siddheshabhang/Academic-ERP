@@ -2,12 +2,10 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
+import OfferDetails from './pages/OfferDetails'; // <--- IMPORT THIS
 import 'bootstrap/dist/css/bootstrap.min.css';
 
-// --- SECURITY GUARD ---
-// This simple component checks if you have a token.
-// If yes -> Let you through (children).
-// If no  -> Redirect you to "/login".
+// Security Guard
 const PrivateRoute = ({ children }) => {
     const isAuthenticated = localStorage.getItem('token');
     return isAuthenticated ? children : <Navigate to="/login" />;
@@ -18,13 +16,20 @@ function App() {
     <Router>
       <div className="container mt-4">
         <Routes>
-          {/* Public Route: Anyone can see this */}
+          {/* Login Page */}
           <Route path="/login" element={<Login />} />
 
-          {/* Private Route: Only logged-in users can see this */}
+          {/* Dashboard (Home) */}
           <Route path="/" element={
             <PrivateRoute>
               <Dashboard />
+            </PrivateRoute>
+          } />
+
+          {/* Offer Details Page */}
+          <Route path="/offer/:id" element={
+            <PrivateRoute>
+              <OfferDetails />
             </PrivateRoute>
           } />
         </Routes>
