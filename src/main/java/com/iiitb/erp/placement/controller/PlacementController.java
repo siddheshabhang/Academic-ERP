@@ -1,8 +1,10 @@
 package com.iiitb.erp.placement.controller;
 
+import com.iiitb.erp.placement.dto.AppliedStudentDTO;
 import com.iiitb.erp.placement.entity.Placement;
 import com.iiitb.erp.placement.entity.Student;
 import com.iiitb.erp.placement.service.PlacementService;
+import com.iiitb.erp.placement.service.PlacementStudentService; // Import this
 import com.iiitb.erp.placement.service.SelectionService;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +23,9 @@ public class PlacementController {
     @Autowired
     private SelectionService selectionService;
 
+    @Autowired
+    private PlacementStudentService placementStudentService; // Inject the service
+
     // 1. Fetch all offers
     @Operation(summary = "Get All Placement Offers", description = "Returns a list of all available job offers.")
     @GetMapping("/all")
@@ -35,21 +40,32 @@ public class PlacementController {
         return placementService.getOfferById(id);
     }
 
-    // 3. View Eligible Students
-    @Operation(summary = "Get Eligible Students", description = "Returns students who meet the criteria (Domain, Specialisation, Grade) for an offer.")
+    // 3. View Eligible Students (Use Case 8.6 - Eligible but maybe not applied)
+    @Operation(summary = "Get Eligible Students", description = "Returns students who meet the criteria for an offer.")
     @GetMapping("/{offerId}/eligible")
     public ResponseEntity<List<Student>> getEligibleStudents(@PathVariable Integer offerId) {
         return ResponseEntity.ok(selectionService.getEligibleStudents(offerId));
     }
 
-    // 4. View/Filter Applicants
+    // 4. NEW: View Applied Students with Filters (Use Case 8.6 - Applied students)
+    @Operation(summary = "Get Applied Students", description = "View students who applied, with optional filters (minGrade, domain, etc).")
+    @GetMapping("/{offerId}/applications")
+    public ResponseEntity<List<AppliedStudentDTO>> getAppliedStudents(
+            @PathVariable Integer offerId,
+            @RequestParam(required = false) Double minGrade,
+            @RequestParam(required = false) Integer specialisationId,
+            @RequestParam(required = false) Integer domainId) {
+
+        return ResponseEntity.ok(placementStudentService.getAppliedStudents(offerId, minGrade, specialisationId, domainId));
+    }
+
+    // 5. Select Student
     @Operation(summary = "Select Student", description = "Mark a student as accepted.")
     @PostMapping("/{offerId}/select/{studentId}")
     public ResponseEntity<String> selectStudentForOffer(
             @PathVariable Integer offerId,
             @PathVariable Integer studentId) {
         placementService.selectStudent(offerId, studentId);
-
         return ResponseEntity.ok("Student " + studentId + " selected successfully.");
     }
 }

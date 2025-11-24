@@ -20,24 +20,42 @@ public class PlacementStudentService {
     @Autowired
     private StudentRepository studentRepository;
 
-    // Changed Long -> Integer
-    public List<AppliedStudentDTO> getAppliedStudents(Integer offerId) {
+    // UPDATED: Added filter parameters (minGrade, specialisationId, domainId)
+    public List<AppliedStudentDTO> getAppliedStudents(Integer offerId, Double minGrade, Integer specialisationId, Integer domainId) {
+        // 1. Fetch all applications for this specific offer
         List<PlacementStudent> applications = placementStudentRepository.findByPlacementId(offerId);
 
         List<AppliedStudentDTO> result = new ArrayList<>();
 
         for (PlacementStudent app : applications) {
-            // Changed Long -> Integer for Student ID lookup
+            // 2. Fetch the student details
             Student student = studentRepository.findById(app.getStudent().getId()).orElse(null);
 
             if (student != null) {
-                String fullName = student.getFirstName() + " " + (student.getLastName() != null ? student.getLastName() : "");
+                // --- FILTERING LOGIC START ---
 
-                // Handle boolean to String conversion for DTO if necessary
+                // Filter by Grade (CGPA)
+                if (minGrade != null && (student.getCgpa() == null || student.getCgpa() < minGrade)) {
+                    continue; // Skip this student
+                }
+
+                // Filter by Specialisation
+                if (specialisationId != null && (student.getSpecialisation() == null || !student.getSpecialisation().getId().equals(specialisationId))) {
+                    continue; // Skip
+                }
+
+                // Filter by Domain
+                if (domainId != null && (student.getDomain() == null || !student.getDomain().getId().equals(domainId))) {
+                    continue; // Skip
+                }
+                // --- FILTERING LOGIC END ---
+
+                // 3. Map to DTO
+                String fullName = student.getFirstName() + " " + (student.getLastName() != null ? student.getLastName() : "");
                 String status = (app.getAcceptance() != null && app.getAcceptance()) ? "SELECTED" : "PENDING";
 
                 result.add(new AppliedStudentDTO(
-                        Long.valueOf(app.getId()), // Cast to Long if DTO expects Long
+                        Long.valueOf(app.getId()),
                         Long.valueOf(student.getId()),
                         student.getRollNumber(),
                         fullName,
