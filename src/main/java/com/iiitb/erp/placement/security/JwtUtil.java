@@ -32,11 +32,23 @@ public class JwtUtil {
     }
 
     public Claims extractClaims(String token) {
-        return Jwts.parserBuilder()
-                .setSigningKey(getSigningKey())
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
+        try {
+            return Jwts.parserBuilder()
+                    .setSigningKey(getSigningKey())
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+        } catch (ExpiredJwtException e) {
+            throw new JwtException("JWT token has expired", e);
+        } catch (UnsupportedJwtException e) {
+            throw new JwtException("JWT token is unsupported", e);
+        } catch (MalformedJwtException e) {
+            throw new JwtException("JWT token is malformed", e);
+        } catch (SecurityException e) {
+            throw new JwtException("Invalid JWT signature", e);
+        } catch (IllegalArgumentException e) {
+            throw new JwtException("JWT token is empty or null", e);
+        }
     }
 
     public String extractEmail(String token) {
@@ -44,6 +56,16 @@ public class JwtUtil {
     }
 
     public String extractRole(String token) {
-        return extractClaims(token).get("role", String.class);
+        Claims claims = extractClaims(token);
+        return claims.get("role", String.class);
+    }
+
+    public boolean validateToken(String token) {
+        try {
+            extractClaims(token);
+            return true;
+        } catch (JwtException | IllegalArgumentException e) {
+            return false;
+        }
     }
 }

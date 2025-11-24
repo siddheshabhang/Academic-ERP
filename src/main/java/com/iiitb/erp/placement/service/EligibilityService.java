@@ -1,4 +1,4 @@
 package com.iiitb.erp.placement.service;
 
-public class EligibiltyService {
+public class EligibilityService {
 }
