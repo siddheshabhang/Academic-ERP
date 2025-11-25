@@ -22,13 +22,25 @@ api.interceptors.request.use(
 );
 
 export const placementService = {
+    // === AUTHENTICATION ===
     login: (token) => localStorage.setItem('token', token),
     logout: () => localStorage.removeItem('token'),
+
+    // === PLACEMENT OFFERS ===
     getAllOffers: () => api.get('/all'),
     getOfferById: (id) => api.get(`/${id}`),
+
+    // === STUDENT FILTERING ===
     getEligibleStudents: (offerId) => api.get(`/${offerId}/eligible`),
-    getAppliedStudents: (offerId, filters = {}) => api.get(`/${offerId}/applications`, { params: filters }),
-    selectStudent: (offerId, studentId) => api.post(`/${offerId}/select/${studentId}`)
+    getAppliedStudents: (offerId, filters = {}) =>
+        api.get(`/${offerId}/applications`, { params: filters }),
+
+    // === STUDENT SELECTION ===
+    selectStudent: (offerId, studentId) => api.post(`/${offerId}/select/${studentId}`),
+
+    // === NEW: DROPDOWN DATA ===
+    getAllDomains: () => api.get('/domains'),
+    getAllSpecialisations: () => api.get('/specialisations'),
 };
 
 export default api;
