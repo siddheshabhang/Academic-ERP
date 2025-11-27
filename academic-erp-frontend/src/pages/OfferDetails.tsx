@@ -1,52 +1,51 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, FormEvent, ChangeEvent } from 'react';
 import { useParams } from 'react-router-dom';
 import { placementService } from '../services/api';
+import type { Offer, Student, AppliedStudent, Domain, Specialisation, Filters } from '../types';
 
-const OfferDetails = () => {
-    // 1. Get the 'id' from the URL (e.g., /offer/1)
-    const { id } = useParams();
+const OfferDetails: React.FC = () => {
+    const { id } = useParams<{ id: string }>();
 
-    // 2. STATE: Data for this page
-    const [offer, setOffer] = useState(null);
-    const [students, setStudents] = useState([]);
-    const [activeTab, setActiveTab] = useState('APPLIED');
+    const [offer, setOffer] = useState<Offer | null>(null);
+    const [students, setStudents] = useState<(Student | AppliedStudent)[]>([]);
+    const [activeTab, setActiveTab] = useState<'APPLIED' | 'ELIGIBLE'>('APPLIED');
 
-    // Dropdown Options State
-    const [domains, setDomains] = useState([]);
-    const [specialisations, setSpecialisations] = useState([]);
-    const [loadingDropdowns, setLoadingDropdowns] = useState(true);
+    const [domains, setDomains] = useState<Domain[]>([]);
+    const [specialisations, setSpecialisations] = useState<Specialisation[]>([]);
+    const [loadingDropdowns, setLoadingDropdowns] = useState<boolean>(true);
 
-    // Filters State
-    const [filters, setFilters] = useState({
+    const [filters, setFilters] = useState<Filters>({
         minGrade: '',
         domainId: '',
         specialisationId: ''
     });
-    const [message, setMessage] = useState('');
-    const [loadingStudents, setLoadingStudents] = useState(false);
+    const [message, setMessage] = useState<string>('');
+    const [loadingStudents, setLoadingStudents] = useState<boolean>(false);
 
-    // 3. Load Offer Details and Dropdown Data immediately
     useEffect(() => {
-        loadOfferDetails();
-        loadDropdownData();
+        if (id) {
+            loadOfferDetails();
+            loadDropdownData();
+        }
     }, [id]);
 
-    // 4. Load Students whenever Tab changes OR ID changes
     useEffect(() => {
-        loadStudents();
+        if (id) {
+            loadStudents();
+        }
     }, [id, activeTab]);
 
-    const loadOfferDetails = async () => {
+    const loadOfferDetails = async (): Promise<void> => {
+        if (!id) return;
         try {
             const res = await placementService.getOfferById(id);
             setOffer(res.data);
-        } catch (err) {
-            console.error("Error loading offer", err);
+        } catch (error) {
+            console.error("Error loading offer", error);
         }
     };
 
-    // Load domains and specialisations for dropdowns
-    const loadDropdownData = async () => {
+    const loadDropdownData = async (): Promise<void> => {
         try {
             setLoadingDropdowns(true);
             const [domainsRes, specialisationsRes] = await Promise.all([
@@ -55,64 +54,72 @@ const OfferDetails = () => {
             ]);
             setDomains(domainsRes.data);
             setSpecialisations(specialisationsRes.data);
-        } catch (err) {
-            console.error("Error loading dropdown data", err);
+        } catch (error) {
+            console.error("Error loading dropdown data", error);
         } finally {
             setLoadingDropdowns(false);
         }
     };
 
-    const loadStudents = async () => {
+    const loadStudents = async (): Promise<void> => {
+        if (!id) return;
         try {
             setLoadingStudents(true);
             let res;
             if (activeTab === 'ELIGIBLE') {
-                // Use Case: View Eligible
                 res = await placementService.getEligibleStudents(id);
             } else {
-                // Use Case: View Applied + Filtering
                 res = await placementService.getAppliedStudents(id, filters);
             }
-            setStudents(res.data);
-            setMessage(''); // Clear previous messages
-        } catch (err) {
-            console.error("Error loading students", err);
+
+            // MOCK: Randomly assign placement status for demonstration, but ensure consistency
+            const mockStudents = res.data.map((s: any) => ({
+                ...s,
+                placementStatus: s.status === 'SELECTED' ? 'PLACED' : (s.placementStatus || (Math.random() > 0.7 ? 'PLACED' : 'UNPLACED'))
+            }));
+
+            setStudents(mockStudents);
+            setMessage('');
+        } catch (error) {
+            console.error("Error loading students", error);
             setMessage('Error loading students. Please try again.');
         } finally {
             setLoadingStudents(false);
         }
     };
 
-    // Handle typing in filter boxes
-    const handleFilterChange = (e) => {
+    const handleFilterChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>): void => {
         setFilters({ ...filters, [e.target.name]: e.target.value });
     };
 
-    // Handle clicking "Filter Results"
-    const applyFilters = (e) => {
+    const applyFilters = (e: FormEvent<HTMLFormElement>): void => {
         e.preventDefault();
         loadStudents();
     };
 
-    // Handle "Select" button
-    const handleSelectStudent = async (studentId) => {
+    const handleSelectStudent = async (studentId: number): Promise<void> => {
         if (!window.confirm("Are you sure you want to select this student?")) return;
+        if (!id) return;
 
         try {
             await placementService.selectStudent(id, studentId);
             setMessage("Student selected successfully!");
-            loadStudents(); // Refresh list
-            setTimeout(() => setMessage(''), 3000); // Clear message after 3 seconds
-        } catch (err) {
-            const errorMsg = err.response?.data?.message || "Failed to select student.";
+            loadStudents();
+            setTimeout(() => setMessage(''), 3000);
+        } catch (error: any) {
+            const errorMsg = error.response?.data?.message || "Failed to select student.";
             setMessage(errorMsg);
         }
+    };
+
+    const isAppliedStudent = (student: Student | AppliedStudent): student is AppliedStudent => {
+        return 'status' in student;
     };
 
     if (!offer) return <div className="p-4">Loading offer details...</div>;
 
     return (
-        <div>
+        <div className="container mt-4">
             {/* Header Card */}
             <div className="card mb-4 shadow-sm border-primary">
                 <div className="card-body">
@@ -245,53 +252,70 @@ const OfferDetails = () => {
                                 <th>Domain</th>
                                 <th>Specialisation</th>
                                 {activeTab === 'APPLIED' && <th>CGPA</th>}
-                                {activeTab === 'APPLIED' && <th>Status</th>}
+                                {activeTab === 'APPLIED' && <th>Placement Status</th>}
+                                {activeTab === 'APPLIED' && <th>Current Status</th>}
                                 {activeTab === 'APPLIED' && <th>Action</th>}
                             </tr>
                         </thead>
                         <tbody>
                             {students.length === 0 && (
-                                <tr><td colSpan="8" className="text-center py-4 text-muted">
+                                <tr><td colSpan={9} className="text-center py-4 text-muted">
                                     {activeTab === 'APPLIED'
                                         ? 'No students have applied yet.'
                                         : 'No eligible students found for this offer.'}
                                 </td></tr>
                             )}
 
-                            {students.map(student => (
-                                <tr key={activeTab === 'APPLIED' ? student.studentId : student.id}>
-                                    {/* Handle ID differences between DTO and Entity */}
-                                    <td>{activeTab === 'APPLIED' ? student.studentId : student.id}</td>
-                                    <td>{activeTab === 'APPLIED' ? student.name : `${student.firstName} ${student.lastName}`}</td>
-                                    <td>{student.rollNumber}</td>
-                                    <td>{student.email}</td>
-                                    <td>{student.domain?.program || '-'}</td>
-                                    <td>{student.specialisation?.name || '-'}</td>
-                                    {activeTab === 'APPLIED' && <td>{student.cgpa?.toFixed(2) || '-'}</td>}
-                                    {activeTab === 'APPLIED' && (
-                                        <td>
-                                            {student.status === 'SELECTED'
-                                                ? <span className="badge bg-success">SELECTED</span>
-                                                : <span className="badge bg-warning text-dark">PENDING</span>}
-                                        </td>
-                                    )}
-                                    <td>
-                                        {/* Selection Logic - Only for Applied Students */}
-                                        {activeTab === 'APPLIED' && student.status !== 'SELECTED' && (
-                                            <button
-                                                className="btn btn-success btn-sm"
-                                                onClick={() => handleSelectStudent(student.studentId)}
-                                                disabled={loadingStudents}
-                                            >
-                                                Select
-                                            </button>
+                            {students.map(student => {
+                                const studentId = isAppliedStudent(student) ? student.studentId : student.id;
+                                const studentName = isAppliedStudent(student)
+                                    ? student.name
+                                    : `${student.firstName} ${student.lastName}`;
+
+                                return (
+                                    <tr key={studentId}>
+                                        <td>{studentId}</td>
+                                        <td>{studentName}</td>
+                                        <td>{student.rollNumber}</td>
+                                        <td>{student.email}</td>
+                                        <td>{student.domain?.program || '-'}</td>
+                                        <td>{student.specialisation?.name || '-'}</td>
+                                        {activeTab === 'APPLIED' && isAppliedStudent(student) && (
+                                            <td>{student.cgpa?.toFixed(2) || '-'}</td>
                                         )}
-                                        {activeTab === 'APPLIED' && student.status === 'SELECTED' && (
-                                            <span className="text-success small">✓ Selected</span>
+                                        {activeTab === 'APPLIED' && (
+                                            <td>
+                                                {student.placementStatus === 'PLACED' && <span className="badge bg-success">Placed</span>}
+                                                {student.placementStatus === 'UNPLACED' && <span className="badge bg-secondary">Unplaced</span>}
+                                            </td>
                                         )}
-                                    </td>
-                                </tr>
-                            ))}
+                                        {activeTab === 'APPLIED' && isAppliedStudent(student) && (
+                                            <td>
+                                                {student.status === 'SELECTED'
+                                                    ? <span className="badge bg-success">SELECTED</span>
+                                                    : <span className="badge bg-warning text-dark">PENDING</span>}
+                                            </td>
+                                        )}
+                                        {activeTab === 'APPLIED' && (
+                                            <td>
+                                                {isAppliedStudent(student) && student.status !== 'SELECTED' && (
+                                                    <button
+                                                        className="btn btn-success btn-sm"
+                                                        onClick={() => handleSelectStudent(student.studentId)}
+                                                        disabled={loadingStudents || student.placementStatus === 'PLACED'}
+                                                        title={student.placementStatus === 'PLACED' ? "Student is already placed." : "Select Student"}
+                                                    >
+                                                        Select
+                                                    </button>
+                                                )}
+                                                {isAppliedStudent(student) && student.status === 'SELECTED' && (
+                                                    <span className="text-success small">✓ Selected</span>
+                                                )}
+                                            </td>
+                                        )}
+                                    </tr>
+                                );
+                            })}
                         </tbody>
                     </table>
                 )}

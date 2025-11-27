@@ -1,20 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { placementService } from '../services/api';
+import type { Offer } from '../types';
 
-const Dashboard = () => {
+const Dashboard: React.FC = () => {
     const navigate = useNavigate();
-    const [offers, setOffers] = useState([]);
-    const [error, setError] = useState('');
-    const [isValidating, setIsValidating] = useState(true);
+    const [offers, setOffers] = useState<Offer[]>([]);
+    const [error, setError] = useState<string>('');
+    const [isValidating, setIsValidating] = useState<boolean>(true);
 
     useEffect(() => {
         validateAndLoadData();
     }, []);
 
-    const validateAndLoadData = async () => {
+    const validateAndLoadData = async (): Promise<void> => {
         try {
-            // Validate token first
             await placementService.validateToken();
             loadOffers();
         } catch (err) {
@@ -25,7 +25,7 @@ const Dashboard = () => {
         }
     };
 
-    const loadOffers = async () => {
+    const loadOffers = async (): Promise<void> => {
         try {
             const response = await placementService.getAllOffers();
             setOffers(response.data);
@@ -34,13 +34,12 @@ const Dashboard = () => {
         }
     };
 
-    const handleLogout = async () => {
+    const handleLogout = async (): Promise<void> => {
         try {
             await placementService.logout();
             navigate('/login');
         } catch (err) {
             console.error('Logout error:', err);
-            // Force logout anyway
             navigate('/login');
         }
     };
@@ -50,7 +49,7 @@ const Dashboard = () => {
     }
 
     return (
-        <div>
+        <div className="container mt-4">
             {/* Header Section */}
             <div className="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
                 <h2>Placement Dashboard</h2>
@@ -71,7 +70,7 @@ const Dashboard = () => {
 
             {/* Offers Grid */}
             <div className="row">
-                {offers.map(offer => (
+                {offers.map((offer) => (
                     <div className="col-md-4 mb-4" key={offer.id}>
                         <div className="card h-100 shadow-sm">
                             <div className="card-header bg-primary text-white">

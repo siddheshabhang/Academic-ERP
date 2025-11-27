@@ -2,15 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { placementService } from '../services/api';
 
-const Login = () => {
+const Login: React.FC = () => {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
-    const [errorMessage, setErrorMessage] = useState('');
+    const [errorMessage, setErrorMessage] = useState<string>('');
 
     useEffect(() => {
         const error = searchParams.get('error');
         if (error) {
-            // Clean up the error message for display
             if (error === 'Unauthorized') {
                 setErrorMessage("Access Denied: You are not authorized to access this portal.");
             } else {
@@ -19,17 +18,15 @@ const Login = () => {
         }
     }, [searchParams]);
 
-    const handleGoogleLogin = () => {
-        // Redirect to backend OAuth endpoint
+    const handleGoogleLogin = (): void => {
         window.location.href = "http://localhost:8080/auth/login";
     };
 
-    // If already logged in, redirect to dashboard
     useEffect(() => {
-        const checkAuth = async () => {
+        const checkAuth = async (): Promise<void> => {
             try {
                 await placementService.validateToken();
-                navigate('/dashboard'); // Changed from '/' to '/dashboard'
+                navigate('/dashboard');
             } catch (err) {
                 // Not logged in, stay on login page
             }
@@ -45,7 +42,6 @@ const Login = () => {
                     <p className="text-muted">Placement Cell Portal</p>
                 </div>
 
-                {/* ERROR MESSAGE DISPLAY */}
                 {errorMessage && (
                     <div className="alert alert-danger text-center small" role="alert">
                         {errorMessage}
