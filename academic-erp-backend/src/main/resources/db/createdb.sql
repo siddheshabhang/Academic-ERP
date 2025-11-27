@@ -1,8 +1,7 @@
 -- ============================================================
 -- Database Creation Script for Academic ERP / Placement System
 -- ============================================================
-CREATE DATABASE placementdb;
-USE placementdb;
+
 -- Disable foreign key checks to allow dropping tables
 SET FOREIGN_KEY_CHECKS=0;
 

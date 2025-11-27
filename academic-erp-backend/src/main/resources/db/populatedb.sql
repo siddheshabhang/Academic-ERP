@@ -2,7 +2,7 @@
 -- Database Population Script for Academic ERP / Placement System
 -- Context: IIIT-B (Indian Institute of Information Technology Bangalore)
 -- ============================================================
-USE placementdb;
+
 SET FOREIGN_KEY_CHECKS=0;
 
 -- Clear existing data
