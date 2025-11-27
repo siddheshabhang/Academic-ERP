@@ -34,12 +34,41 @@ const Login: React.FC = () => {
         checkAuth();
     }, [navigate]);
 
+    const trustBadges = [
+        { icon: 'bi-shield-check', label: 'Secure OAuth2 Login' },
+        { icon: 'bi-bar-chart', label: 'Live Offer Insights' },
+        { icon: 'bi-people', label: 'Candidate Shortlisting' },
+    ];
+
     return (
-        <div className="container d-flex justify-content-center align-items-center vh-100">
-            <div className="card shadow-lg p-4" style={{ width: '400px', borderRadius: '15px' }}>
+        <div className="page-shell login-page">
+            <div className="login-grid container">
+                <div className="login-showcase">
+                    <span className="brand-pill">IIITB · Outreach</span>
+                    <h1>
+                        Placement Cell <span className="text-highlight">Command Center</span>
+                    </h1>
+                    <p>
+                        Track offers, shortlist candidates, and collaborate with the Outreach team
+                        through a single secure dashboard tailored for recruitment drives.
+                    </p>
+
+                    <div className="showcase-cards">
+                        {trustBadges.map((badge) => (
+                            <div className="showcase-card" key={badge.label}>
+                                <i className={`bi ${badge.icon}`}></i>
+                                <span>{badge.label}</span>
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className="glow-blur"></div>
+                </div>
+
+                <div className="glass-panel login-panel">
                 <div className="text-center mb-4">
-                    <h3 className="fw-bold text-primary">Academic ERP</h3>
-                    <p className="text-muted">Placement Cell Portal</p>
+                        <h3 className="fw-bold text-primary mb-1">Academic ERP</h3>
+                        <p className="text-muted mb-0">Placement Cell Portal</p>
                 </div>
 
                 {errorMessage && (
@@ -48,25 +77,22 @@ const Login: React.FC = () => {
                     </div>
                 )}
 
-                <div className="d-flex justify-content-center my-3">
+                    <div className="login-actions">
                     <button
-                        className="btn btn-light border w-100 d-flex align-items-center justify-content-center py-2 shadow-sm"
+                            className="google-btn"
                         onClick={handleGoogleLogin}
-                        style={{ gap: '10px', fontSize: '16px', fontWeight: '500' }}
                     >
                         <img
                             src="https://developers.google.com/identity/images/g-logo.png"
                             alt="G"
-                            style={{ width: '20px', height: '20px' }}
+                                className="google-icon"
                         />
                         <span>Sign in with Google</span>
                     </button>
+                        <p className="text-muted small text-center mb-0 mt-3">
+                            Only authorized Outreach employees can access this dashboard.
+                        </p>
                 </div>
-
-                <div className="text-center mt-3">
-                    <small className="text-muted">
-                        Only authorized Outreach employees can access this dashboard.
-                    </small>
                 </div>
             </div>
         </div>

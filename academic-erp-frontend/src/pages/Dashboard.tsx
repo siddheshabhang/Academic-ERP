@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { placementService } from '../services/api';
 import type { Offer } from '../types';
@@ -44,61 +44,118 @@ const Dashboard: React.FC = () => {
         }
     };
 
+    const totalIntake = useMemo(
+        () => offers.reduce((sum, offer) => sum + (offer.intake || 0), 0),
+        [offers]
+    );
+
+    const avgCgpa = useMemo(() => {
+        if (!offers.length) return '-';
+        const valid = offers.filter((offer) => typeof offer.minGrade === 'number');
+        if (!valid.length) return '-';
+        const total = valid.reduce((sum, offer) => sum + (offer.minGrade || 0), 0);
+        return (total / valid.length).toFixed(2);
+    }, [offers]);
+
+    const heroSubtext = offers.length
+        ? `${offers.length} open ${offers.length === 1 ? 'offer' : 'offers'} monitored in real-time`
+        : 'Connect with hiring partners and manage applications at scale.';
+
     if (isValidating) {
-        return <div className="p-4">Validating session...</div>;
+        return (
+            <div className="page-shell">
+                <div className="loading-state">
+                    <span className="spinner-border text-primary"></span>
+                    <p className="mt-3 text-muted mb-0">Validating session...</p>
+                </div>
+            </div>
+        );
     }
 
     return (
-        <div className="container mt-4">
+        <div className="page-shell dashboard-page">
+            <div className="container py-4">
             {/* Header Section */}
-            <div className="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
-                <h2>Placement Dashboard</h2>
-                <button className="btn btn-outline-danger" onClick={handleLogout}>
+                <div className="erp-hero">
+                    <div>
+                        <p className="eyebrow mb-1">Recruitment Analytics</p>
+                        <h2 className="hero-title">Placement Dashboard</h2>
+                        <p className="hero-subtitle">{heroSubtext}</p>
+                    </div>
+                    <button className="btn btn-outline-light btn-sm" onClick={handleLogout}>
+                        <i className="bi bi-box-arrow-right me-2"></i>
                     Logout
                 </button>
             </div>
 
+                {/* Stats */}
+                <div className="stats-grid">
+                    <div className="stat-card">
+                        <p className="label">Active Offers</p>
+                        <h3>{offers.length || '—'}</h3>
+                        <span className="trend text-success">
+                            <i className="bi bi-arrow-up-right"></i> Live data
+                        </span>
+                    </div>
+                    <div className="stat-card">
+                        <p className="label">Total Intake</p>
+                        <h3>{totalIntake || '—'}</h3>
+                        <span className="trend text-primary">Seats planned</span>
+                    </div>
+                    <div className="stat-card">
+                        <p className="label">Average Min CGPA</p>
+                        <h3>{avgCgpa}</h3>
+                        <span className="trend text-warning">Eligibility benchmark</span>
+                    </div>
+                </div>
+
             {/* Error Message */}
-            {error && <div className="alert alert-danger">{error}</div>}
+                {error && <div className="alert alert-danger mt-4">{error}</div>}
 
             {/* Empty State */}
             {offers.length === 0 && !error && (
-                <div className="alert alert-info">
-                    No offers found in the database.
+                    <div className="empty-state glass-panel mt-4">
+                        <i className="bi bi-folder2-open"></i>
+                        <p className="mb-1 fw-semibold">No offers found</p>
+                        <span className="text-muted">Create an offer to begin tracking applicants.</span>
                 </div>
             )}
 
             {/* Offers Grid */}
-            <div className="row">
+                <div className="offer-grid mt-4">
                 {offers.map((offer) => (
-                    <div className="col-md-4 mb-4" key={offer.id}>
-                        <div className="card h-100 shadow-sm">
-                            <div className="card-header bg-primary text-white">
-                                <h5 className="mb-0">{offer.profile}</h5>
+                        <div className="offer-card glass-panel" key={offer.id}>
+                            <div className="offer-card__header">
+                                <div>
+                                    <p className="label text-uppercase mb-1">
+                                        {offer.organisation?.name || 'Unknown Organisation'}
+                                    </p>
+                                    <h5>{offer.profile}</h5>
+                                </div>
+                                <span className="badge bg-gradient">{offer.intake} seats</span>
                             </div>
-                            <div className="card-body">
-                                <h6 className="card-subtitle mb-2 text-muted">
-                                    {offer.organisation?.name || 'Unknown Company'}
-                                </h6>
-                                <p className="card-text text-truncate">
-                                    {offer.description}
-                                </p>
-                                <ul className="list-group list-group-flush mb-3">
-                                    <li className="list-group-item px-0">
-                                        <strong>Intake:</strong> {offer.intake} students
-                                    </li>
-                                    <li className="list-group-item px-0">
-                                        <strong>Min CGPA:</strong> {offer.minGrade}
-                                    </li>
-                                </ul>
 
-                                <Link to={`/offer/${offer.id}`} className="btn btn-primary w-100">
-                                    Manage Applications
-                                </Link>
+                            <p className="offer-description">{offer.description}</p>
+
+                            <div className="offer-meta">
+                                <div>
+                                    <p className="label mb-0">Min CGPA</p>
+                                    <h6 className="mb-0">{offer.minGrade || '-'}</h6>
+                                </div>
+                                <div>
+                                    <p className="label mb-0">Organisation</p>
+                                    <h6 className="mb-0">
+                                        {offer.organisation?.name || 'Not provided'}
+                                </h6>
+                                </div>
                             </div>
+
+                            <Link to={`/offer/${offer.id}`} className="btn btn-outline-primary w-100">
+                                Manage Applications
+                            </Link>
                         </div>
+                    ))}
                     </div>
-                ))}
             </div>
         </div>
     );
