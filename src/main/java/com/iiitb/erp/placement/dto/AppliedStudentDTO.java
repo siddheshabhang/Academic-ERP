@@ -15,6 +15,9 @@ public class AppliedStudentDTO {
     private String name;
     private String email;
     private String cvUrl;
-    private String status;      // e.g., PENDING, SELECTED
+    private String status; // e.g., PENDING, SELECTED
     private Date appliedDate;
+    private Double cgpa; // Added for frontend display
+    private DomainDTO domain; // Added for frontend display
+    private SpecialisationDTO specialisation; // Added for frontend display
 }

@@ -11,8 +11,6 @@ public class EmployeeService {
     @Autowired
     private EmployeeRepository employeeRepository;
 
-    // NOTE: Manual login/token generation is removed because we use OAuth2 now.
-
     public Employee getEmployeeByEmail(String email) {
         return employeeRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Employee not found"));

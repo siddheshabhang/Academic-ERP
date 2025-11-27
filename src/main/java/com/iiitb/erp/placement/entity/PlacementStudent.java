@@ -26,7 +26,8 @@ public class PlacementStudent {
 
     private String about;
 
-    private Boolean acceptance; // True = Selected
+    @Column(name = "acceptance")
+    private boolean acceptance = false;  // Default to false
 
     private String comments;
 

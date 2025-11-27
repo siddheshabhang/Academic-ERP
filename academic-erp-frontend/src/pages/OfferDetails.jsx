@@ -246,7 +246,7 @@ const OfferDetails = () => {
                                 <th>Specialisation</th>
                                 {activeTab === 'APPLIED' && <th>CGPA</th>}
                                 {activeTab === 'APPLIED' && <th>Status</th>}
-                                <th>Action</th>
+                                {activeTab === 'APPLIED' && <th>Action</th>}
                             </tr>
                         </thead>
                         <tbody>
@@ -276,7 +276,7 @@ const OfferDetails = () => {
                                         </td>
                                     )}
                                     <td>
-                                        {/* Selection Logic */}
+                                        {/* Selection Logic - Only for Applied Students */}
                                         {activeTab === 'APPLIED' && student.status !== 'SELECTED' && (
                                             <button
                                                 className="btn btn-success btn-sm"

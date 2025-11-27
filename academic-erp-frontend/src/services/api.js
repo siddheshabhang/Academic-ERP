@@ -1,46 +1,39 @@
 import axios from 'axios';
-
-// Ensure this matches your Spring Boot port (usually 8080)
-const API_URL = 'http://localhost:8080/api/placement';
+const API_URL = 'http://localhost:8080';
 
 const api = axios.create({
     baseURL: API_URL,
-});
-
-// Automatically add the token to every request if it exists
-api.interceptors.request.use(
-    (config) => {
-        const token = localStorage.getItem('token');
-        if (token) {
-            config.headers['Authorization'] = `Bearer ${token}`;
-        }
-        return config;
-    },
-    (error) => {
-        return Promise.reject(error);
+    withCredentials: true,
+    headers: {
+        'Content-Type': 'application/json',
     }
-);
+});
 
 export const placementService = {
     // === AUTHENTICATION ===
-    login: (token) => localStorage.setItem('token', token),
-    logout: () => localStorage.removeItem('token'),
+
+    // Status check (Validation)
+    validateToken: () => api.get('/api/placement/validate'),
+
+    // Logout
+    logout: () => api.post('/auth/signout'),
 
     // === PLACEMENT OFFERS ===
-    getAllOffers: () => api.get('/all'),
-    getOfferById: (id) => api.get(`/${id}`),
+    // Note: appended '/api/placement' because we changed baseURL to root
+    getAllOffers: () => api.get('/api/placement/all'),
+    getOfferById: (id) => api.get(`/api/placement/${id}`),
 
     // === STUDENT FILTERING ===
-    getEligibleStudents: (offerId) => api.get(`/${offerId}/eligible`),
+    getEligibleStudents: (offerId) => api.get(`/api/placement/${offerId}/eligible`),
     getAppliedStudents: (offerId, filters = {}) =>
-        api.get(`/${offerId}/applications`, { params: filters }),
+        api.get(`/api/placement/${offerId}/applications`, { params: filters }),
 
     // === STUDENT SELECTION ===
-    selectStudent: (offerId, studentId) => api.post(`/${offerId}/select/${studentId}`),
+    selectStudent: (offerId, studentId) => api.post(`/api/placement/${offerId}/select/${studentId}`),
 
-    // === NEW: DROPDOWN DATA ===
-    getAllDomains: () => api.get('/domains'),
-    getAllSpecialisations: () => api.get('/specialisations'),
+    // === DROPDOWN DATA ===
+    getAllDomains: () => api.get('/api/placement/domains'), // Assuming you have this endpoint
+    getAllSpecialisations: () => api.get('/api/placement/specialisations'), // Assuming you have this endpoint
 };
 
 export default api;

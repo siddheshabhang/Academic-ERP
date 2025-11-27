@@ -1,32 +1,53 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom'; // Allows us to switch pages without reloading
+import { Link, useNavigate } from 'react-router-dom';
 import { placementService } from '../services/api';
 
 const Dashboard = () => {
-    // 1. STATE: Memory to hold our data
+    const navigate = useNavigate();
     const [offers, setOffers] = useState([]);
     const [error, setError] = useState('');
+    const [isValidating, setIsValidating] = useState(true);
 
-    // 2. EFFECT: Run this ONCE when the page loads
     useEffect(() => {
-        loadOffers();
+        validateAndLoadData();
     }, []);
 
-    const loadOffers = async () => {
+    const validateAndLoadData = async () => {
         try {
-            // Call the Java Backend
-            const response = await placementService.getAllOffers();
-            // Save the data to React memory
-            setOffers(response.data);
+            // Validate token first
+            await placementService.validateToken();
+            loadOffers();
         } catch (err) {
-            setError("Failed to fetch offers. Are you logged in as Outreach?");
+            setError("Session expired. Please login again.");
+            setTimeout(() => navigate('/login'), 2000);
+        } finally {
+            setIsValidating(false);
         }
     };
 
-    const handleLogout = () => {
-        placementService.logout();
-        window.location.reload(); // Reloads page -> triggers security check -> sends to login
+    const loadOffers = async () => {
+        try {
+            const response = await placementService.getAllOffers();
+            setOffers(response.data);
+        } catch (err) {
+            setError("Failed to fetch offers. Are you logged in?");
+        }
     };
+
+    const handleLogout = async () => {
+        try {
+            await placementService.logout();
+            navigate('/login');
+        } catch (err) {
+            console.error('Logout error:', err);
+            // Force logout anyway
+            navigate('/login');
+        }
+    };
+
+    if (isValidating) {
+        return <div className="p-4">Validating session...</div>;
+    }
 
     return (
         <div>
@@ -58,7 +79,7 @@ const Dashboard = () => {
                             </div>
                             <div className="card-body">
                                 <h6 className="card-subtitle mb-2 text-muted">
-                                    {offer.organisation ? offer.organisation.name : 'Unknown Company'}
+                                    {offer.organisation?.name || 'Unknown Company'}
                                 </h6>
                                 <p className="card-text text-truncate">
                                     {offer.description}
